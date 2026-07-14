@@ -121,7 +121,43 @@
     transition:transform .2s ease, box-shadow .2s ease;
   }
   .nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(240,169,62,0.3);}
-  .menu-toggle{display:none;}
+  .menu-toggle{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+    width:38px;height:38px;
+    background:transparent;border:none;cursor:pointer;padding:0;
+  }
+  .menu-toggle span{
+    display:block;width:100%;height:2px;background:var(--ink-text);
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .menu-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;}
+  .menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+  .mobile-nav{
+    display:none;
+    flex-direction:column;
+    max-width:1180px;margin:0 auto;
+    padding:0 28px;
+    overflow:hidden;max-height:0;
+    transition:max-height .35s ease, padding .35s ease;
+  }
+  .mobile-nav.open{
+    display:flex;
+    max-height:400px;
+    padding:8px 28px 20px;
+  }
+  .mobile-nav a{
+    font-family:var(--mono);font-size:0.88rem;letter-spacing:0.04em;
+    text-decoration:none;color:var(--ink-text-dim);
+    padding:14px 0;border-top:1px solid var(--line);
+  }
+  .mobile-nav a:first-child{border-top:none;}
+  .mobile-nav a.active{color:var(--hazard-bright);}
+  header.site-nav.menu-open{background:var(--ink);}
 
   /* ---------- Hero ---------- */
   .hero{
@@ -441,16 +477,57 @@
   footer a:hover{color:var(--ink-text);}
 
   @media (max-width:860px){
-    .hero-grid{grid-template-columns:1fr;}
+    .wrap{padding:0 20px;}
+    .nav-inner{padding:0 20px;}
+
+    .hero{padding:120px 0 60px;min-height:auto;}
+    .hero-grid{grid-template-columns:1fr;gap:40px;}
     .hero-copy{transform:translateY(30px) scale(0.95);}
-    .door-stage{margin-top:20px;max-width:260px;}
+    .hero .sub-title{font-size:0.85rem;letter-spacing:0.18em;}
+    .hero .cta-row{width:100%;}
+    .hero .cta-row .btn{flex:1;justify-content:center;}
+
+    .door-stage{margin-top:20px;max-width:220px;}
+
     .lore-grid{grid-template-columns:1fr;}
     .lore-vs{position:static;transform:none;margin:0 auto;box-shadow:none;}
+    .lore-col{padding:34px 26px;}
+
     .board-stat-row{flex-wrap:wrap;}
     .board-stat{flex:1 1 45%;border-right:none;border-top:1px solid var(--line);padding-top:16px;}
-    .download-panel{grid-template-columns:1fr;padding:40px 28px;}
+
+    .type-grid{grid-template-columns:1fr;}
+    .type-card{height:auto;min-height:280px;}
+
+    .card-gallery{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+
+    .turn-step{grid-template-columns:50px 1fr;gap:16px;}
+    .turn-step .num{font-size:1.8rem;}
+
+    .win-banner{flex-direction:column;align-items:flex-start;}
+
+    .download-panel{grid-template-columns:1fr;padding:36px 24px;}
+    .download-actions{width:100%;}
+
     nav.links{display:none;}
-    .py{padding:76px 0;}
+    .menu-toggle{display:flex;}
+    .py{padding:64px 0;}
+  }
+
+  @media (max-width:480px){
+    .hero h1{font-size:2.6rem;}
+    .hero p.lead{font-size:0.98rem;}
+    .eyebrow{font-size:0.66rem;}
+
+    .section-head h2{font-size:1.8rem;}
+
+    .roster-wrap{-webkit-overflow-scrolling:touch;}
+
+    .card-gallery{grid-template-columns:1fr 1fr;}
+
+    .win-banner .win-copy strong{font-size:1.2rem;}
+
+    .download-panel h2{font-size:1.7rem;}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -484,7 +561,17 @@
       <a href="#cards" data-nav-link>Cards</a>
     </nav>
     <a class="nav-cta" href="#download">Download</a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="#lore" data-nav-link>The Rivalry</a>
+    <a href="#overview" data-nav-link>The Floor</a>
+    <a href="#howto" data-nav-link>How to Play</a>
+    <a href="#monsters" data-nav-link>Monsters</a>
+    <a href="#cards" data-nav-link>Cards</a>
+  </nav>
 </header>
 
 <section class="hero" id="top">
@@ -816,7 +903,7 @@
         </ul>
       </div>
       <div class="download-actions">
-        <a class="btn btn-primary" href="https://github.com/Omar-Shaker-Elbana/doordashdownload/raw/main/downloads/DooR_DasH.zip" download rel="noopener">Download the Game (.zip)</a>
+        <a class="btn btn-primary" href="https://raw.githubusercontent.com/Omar-Shaker-Elbana/doordashdownload/main/downloads/DooR_DasH.zip" download="DooR_DasH.zip" rel="noopener">Download the Game (.zip)</a>
         <a class="btn btn-ghost" href="https://github.com/Omar-Shaker-Elbana/DooR_DasH" target="_blank" rel="noopener">View Source on GitHub</a>
       </div>
     </div>
@@ -944,6 +1031,29 @@
       card.classList.toggle('flipped');
     });
   });
+
+  // Mobile menu toggle
+  (function(){
+    const toggle = document.getElementById('menuToggle');
+    const mobileNav = document.getElementById('mobileNav');
+    const siteNav = document.querySelector('header.site-nav');
+    if(!toggle || !mobileNav) return;
+
+    function closeMenu(){
+      mobileNav.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+      siteNav.classList.remove('menu-open');
+    }
+    function toggleMenu(){
+      const isOpen = mobileNav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      siteNav.classList.toggle('menu-open', isOpen);
+    }
+    toggle.addEventListener('click', toggleMenu);
+    mobileNav.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('click', closeMenu);
+    });
+  })();
 </script>
 
 </body>
