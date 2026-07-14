@@ -477,17 +477,27 @@
   footer a:hover{color:var(--ink-text);}
 
   @media (max-width:860px){
+.floor-strip .cell{min-width:0;}
+    .hero{overflow:hidden;}
+
     .wrap{padding:0 20px;}
     .nav-inner{padding:0 20px;}
 
-    .hero{padding:120px 0 60px;min-height:auto;}
-    .hero-grid{grid-template-columns:1fr;gap:40px;}
-    .hero-copy{transform:translateY(30px) scale(0.95);}
-    .hero .sub-title{font-size:0.85rem;letter-spacing:0.18em;}
-    .hero .cta-row{width:100%;}
+    .hero{padding:104px 0 48px;min-height:auto;overflow:hidden;}
+    .hero-grid{grid-template-columns:1fr;gap:36px;text-align:center;}
+    .hero-copy{transform:translateY(24px) scale(0.97);}
+    .hero .eyebrow{justify-content:center;}
+    .hero h1{font-size:clamp(2.8rem,13vw,4.2rem);}
+    .hero .sub-title{font-size:0.78rem;letter-spacing:0.16em;}
+    .hero p.lead{margin-left:auto;margin-right:auto;font-size:1rem;}
+    .hero .cta-row{width:100%;justify-content:center;}
     .hero .cta-row .btn{flex:1;justify-content:center;}
 
-    .door-stage{margin-top:20px;max-width:220px;}
+    .door-stage{margin:8px auto 0;max-width:180px;}
+
+    .hero .floor-strip{max-width:100%;}
+    .hero div[style*="margin-top:56px"]{margin-top:36px !important;max-width:100% !important;}
+    .strip-caption{font-size:0.6rem;}
 
     .lore-grid{grid-template-columns:1fr;}
     .lore-vs{position:static;transform:none;margin:0 auto;box-shadow:none;}
@@ -515,6 +525,10 @@
   }
 
   @media (max-width:480px){
+.hero .cta-row{flex-direction:column;gap:12px;}
+    .hero .cta-row .btn{width:100%;}
+    .door-stage{max-width:150px;}
+
     .hero h1{font-size:2.6rem;}
     .hero p.lead{font-size:0.98rem;}
     .eyebrow{font-size:0.66rem;}
@@ -935,23 +949,35 @@
     strip.appendChild(token);
   })();
 
-  // Door swing on load, hero copy pops out once the door is open
-  window.addEventListener('load', ()=>{
-    setTimeout(()=>{
-      document.getElementById('doorStage').classList.add('open');
-    }, 500);
-    setTimeout(()=>{
-      document.getElementById('heroCopy').classList.add('pop');
-    }, 1100);
-  });
   
   // Hero sequence: hero copy starts "inside" the door, the door swings open,
   // the copy flies out to its resting position and scales up, then the door fades away.
+  // On phones the layout stacks vertically, so the "fly from door" math would produce
+  // a large diagonal jump — use a simple fade/slide there instead.
   (function(){
     const doorStage = document.getElementById('doorStage');
     const heroCopy = document.getElementById('heroCopy');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isCompact = window.matchMedia('(max-width:860px)').matches;
     if(reduceMotion || !doorStage || !heroCopy) return;
+
+    if(isCompact){
+      heroCopy.style.transition = 'none';
+      heroCopy.style.opacity = '0';
+      heroCopy.style.transform = 'translateY(20px) scale(0.97)';
+      heroCopy.offsetHeight;
+      heroCopy.style.transition = '';
+
+      window.addEventListener('load', ()=>{
+        setTimeout(()=>{ doorStage.classList.add('open'); }, 350);
+        setTimeout(()=>{
+          heroCopy.style.transform = 'translateY(0) scale(1)';
+          heroCopy.style.opacity = '1';
+        }, 600);
+        setTimeout(()=>{ doorStage.classList.add('exit'); }, 1600);
+      });
+      return;
+    }
 
     function stageCopyAtDoor(){
       const d = doorStage.getBoundingClientRect();
