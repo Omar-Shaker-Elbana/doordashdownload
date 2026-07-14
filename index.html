@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DooR DasH — Scare vs Laugh Touchdown</title>
+<meta name="description" content="A competitive board game set in Monstropolis. Race across the Floor, harness screams or laughter, and reach Boo's Door with 1000 energy first.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171F;
+    --ink-2:#1B1F29;
+    --ink-3:#232837;
+    --paper:#F2E9D3;
+    --paper-2:#E7DBBB;
+    --scream:#7A4FC7;
+    --scream-bright:#B18AF0;
+    --scream-dim:#3E2C63;
+    --laugh:#8FCB3E;
+    --laugh-bright:#C3EE7E;
+    --laugh-dim:#3B4C22;
+    --hazard:#F0A93E;
+    --hazard-bright:#FFC868;
+    --sock:#D9772F;
+    --ink-text:#EDEAE2;
+    --ink-text-dim:#A9A79E;
+    --dark-text:#1D1A12;
+    --dark-text-dim:#5C5745;
+    --line:rgba(237,234,226,0.12);
+    --line-dark:rgba(29,26,18,0.14);
+    --display:'Anton', sans-serif;
+    --body:'Space Grotesk', sans-serif;
+    --mono:'JetBrains Mono', monospace;
+    --radius: 14px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--ink-text);
+    font-family:var(--body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;}
+  ::selection{background:var(--scream);color:#fff;}
+
+  h1,h2,h3{
+    font-family:var(--display);
+    font-weight:400;
+    letter-spacing:0.01em;
+    margin:0;
+    text-transform:uppercase;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--hazard-bright);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;height:2px;background:var(--hazard-bright);display:inline-block;
+  }
+  .eyebrow.on-paper{color:var(--sock);}
+  .eyebrow.on-paper::before{background:var(--sock);}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  section{position:relative;}
+
+  /* ---------- Nav ---------- */
+  header.site-nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    padding:18px 0;
+    background:linear-gradient(to bottom, rgba(20,23,31,0.92), rgba(20,23,31,0));
+    backdrop-filter:blur(6px);
+    transition:background .3s ease;
+  }
+  .nav-inner{
+    max-width:1180px;margin:0 auto;padding:0 28px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{
+    font-family:var(--display);
+    font-size:1.25rem;
+    letter-spacing:0.03em;
+    display:flex;align-items:center;gap:10px;
+    text-decoration:none;
+  }
+  .brand .dot-pair{display:flex;gap:4px;}
+  .brand .dot-pair span{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .brand .dot-pair span:nth-child(1){background:var(--scream-bright);}
+  .brand .dot-pair span:nth-child(2){background:var(--laugh-bright);}
+  nav.links{display:flex;gap:28px;font-family:var(--mono);font-size:0.8rem;letter-spacing:0.04em;}
+  nav.links a{text-decoration:none;color:var(--ink-text-dim);transition:color .2s;position:relative;}
+  nav.links a:hover{color:var(--ink-text);}
+  nav.links a.active{color:var(--hazard-bright);}
+  nav.links a.active::after{
+    content:"";position:absolute;left:0;right:0;bottom:-8px;height:2px;border-radius:2px;
+    background:var(--hazard-bright);
+  }
+
+  .scroll-progress{
+    position:fixed;top:0;left:0;height:3px;width:0%;z-index:200;
+    background:linear-gradient(90deg, var(--scream-bright), var(--hazard-bright), var(--laugh-bright));
+  }
+  .nav-cta{
+    font-family:var(--mono);font-size:0.78rem;letter-spacing:0.03em;
+    padding:9px 18px;border-radius:999px;
+    background:var(--hazard);color:var(--dark-text);
+    text-decoration:none;font-weight:700;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(240,169,62,0.3);}
+  .menu-toggle{display:none;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:140px 0 80px;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(122,79,199,0.22), transparent 55%),
+      radial-gradient(ellipse at 85% 75%, rgba(143,203,62,0.16), transparent 55%),
+      var(--ink);
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;grid-template-columns:1.1fr 0.9fr;gap:60px;align-items:center;
+  }
+  .hero .eyebrow{margin-bottom:22px;}
+  .hero h1{
+    font-size:clamp(3.6rem, 8vw, 6.4rem);
+    line-height:0.92;
+    background:linear-gradient(100deg, var(--laugh-bright) 0%, var(--ink-text) 30%, var(--ink-text) 65%, var(--scream-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .sub-title{
+    font-family:var(--mono);
+    font-size:1rem;
+    letter-spacing:0.28em;
+    margin-top:14px;
+    color:var(--ink-text-dim);
+  }
+  .hero p.lead{
+    margin-top:26px;
+    max-width:52ch;
+    font-size:1.08rem;
+    color:var(--ink-text-dim);
+  }
+  .hero .cta-row{display:flex;gap:16px;margin-top:38px;flex-wrap:wrap;}
+  .hero-copy{
+    opacity:1;
+    transition:opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1);
+    will-change:transform, opacity;
+  }
+  .hero-copy{
+    opacity:0;
+    transform:translateX(46px) scale(0.92);
+    transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
+  }
+  .hero-copy.pop{
+    opacity:1;
+    transform:translateX(0) scale(1);
+  }
+  .btn{
+    font-family:var(--mono);font-size:0.85rem;font-weight:700;letter-spacing:0.02em;
+    padding:15px 26px;border-radius:10px;text-decoration:none;
+    display:inline-flex;align-items:center;gap:10px;
+    transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+    border:1px solid transparent;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--hazard);color:var(--dark-text);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(240,169,62,0.32);}
+  .btn-ghost{border-color:var(--line);color:var(--ink-text);background:transparent;}
+  .btn-ghost:hover{border-color:var(--ink-text-dim);background:rgba(237,234,226,0.05);}
+
+  /* Door visual */
+  .door-stage{
+    position:relative;
+    aspect-ratio:3/4;
+    perspective:1400px;
+    max-width:340px;
+    margin:0 auto;
+    transition:opacity 1s ease, transform 1s ease;
+  }
+  .door-stage.exit{
+    opacity:0;
+    transform:scale(0.88);
+    pointer-events:none;
+  }
+  .door-frame{
+    position:absolute;inset:0;
+    background:var(--ink-3);
+    border-radius:10px;
+    border:2px solid var(--line);
+    overflow:hidden;
+    box-shadow:0 30px 60px rgba(0,0,0,0.45);
+  }
+  .door-glow{
+    position:absolute;inset:6%;
+    background:radial-gradient(circle, var(--laugh) 0%, var(--scream) 70%, transparent 100%);
+    opacity:0.55;filter:blur(30px);
+  }
+  .door-panel{
+    position:absolute;top:0;bottom:0;width:50%;
+    background:linear-gradient(180deg, var(--ink-2), var(--ink-3));
+    border:1px solid var(--line);
+    transform-origin:left center;
+    display:flex;align-items:center;justify-content:center;
+    transition:none;
+  }
+  .door-panel.right{left:50%;transform-origin:right center;}
+  .door-panel.left{left:0;}
+  .door-panel .knob{width:10px;height:10px;border-radius:50%;background:var(--hazard-bright);}
+  .door-panel.left .knob{margin-left:auto;margin-right:14px;}
+  .door-panel.right .knob{margin-right:auto;margin-left:14px;}
+  @keyframes swingLeft{
+    0%{transform:rotateY(0deg);}
+    100%{transform:rotateY(-108deg);}
+  }
+  @keyframes swingRight{
+    0%{transform:rotateY(0deg);}
+    100%{transform:rotateY(108deg);}
+  }
+  .door-stage.open .door-panel.left{animation:swingLeft 1.4s cubic-bezier(.6,0,.3,1) forwards;}
+  .door-stage.open .door-panel.right{animation:swingRight 1.4s cubic-bezier(.6,0,.3,1) forwards;}
+  .door-number{
+    position:absolute;bottom:14px;right:16px;
+    font-family:var(--mono);font-size:0.85rem;color:var(--ink-text-dim);
+    letter-spacing:0.1em;
+  }
+
+  /* Floor strip - signature element */
+  .floor-strip{
+    display:flex;width:100%;height:34px;border-radius:8px;overflow:hidden;
+    border:1px solid var(--line);position:relative;
+  }
+  .floor-strip .cell{flex:1;min-width:22px;position:relative;}
+  .cell.c-scare{background:var(--scream-dim);}
+  .cell.c-laugh{background:var(--laugh-dim);}
+  .cell.c-card{background:#5B2E33;}
+  .cell.c-conv{background:#2E4A2C;}
+  .cell.c-sock{background:#5C3A1E;}
+  .cell.c-mon{background:#233A56;}
+  .cell.c-norm{background:var(--ink-3);}
+  .floor-strip .token{
+    position:absolute;top:50%;width:16px;height:16px;margin-top:-8px;margin-left:-8px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--laugh-bright), var(--scream));
+    box-shadow:0 0 12px rgba(195,238,126,0.7);
+    animation:tokenMove 9s linear infinite;
+  }
+  @keyframes tokenMove{
+    0%{left:0%;}
+    100%{left:100%;}
+  }
+  .strip-caption{
+    display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:0.68rem;color:var(--ink-text-dim);
+    margin-top:8px;letter-spacing:0.05em;
+  }
+
+  .section-divider{
+    display:flex;align-items:center;gap:10px;
+    margin:0 auto;max-width:1180px;padding:0 28px;
+  }
+  .section-divider .line{flex:1;height:1px;background:var(--line);}
+  .section-divider .dot{width:6px;height:6px;border-radius:50%;}
+
+  /* ---------- Generic section padding ---------- */
+  .py{padding:110px 0;}
+  .on-dark{background:var(--ink);}
+  .on-paper{background:var(--paper);color:var(--dark-text);}
+  .on-paper .eyebrow{color:var(--sock);}
+  .on-paper2{background:var(--ink-2);}
+
+  .section-head{max-width:640px;margin-bottom:56px;}
+  .section-head h2{font-size:clamp(2.2rem,4.4vw,3.2rem);margin-top:14px;}
+  .section-head p{margin-top:16px;font-size:1.05rem;color:var(--ink-text-dim);}
+  .on-paper .section-head p{color:var(--dark-text-dim);}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in-view{opacity:1;transform:translateY(0);}
+
+  /* ---------- Lore / revolutionary change ---------- */
+  .lore-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:18px;overflow:hidden;border:1px solid var(--line);}
+  .lore-col{padding:44px 40px;position:relative;}
+  .lore-col.scarer{background:linear-gradient(160deg, var(--scream-dim), var(--ink-2));}
+  .lore-col.laugher{background:linear-gradient(160deg, var(--laugh-dim), var(--ink-2));}
+  .lore-col h3{font-size:1.7rem;margin-bottom:4px;}
+  .lore-col.scarer h3{color:var(--scream-bright);}
+  .lore-col.laugher h3{color:var(--laugh-bright);}
+  .lore-col .tag{font-family:var(--mono);font-size:0.72rem;color:var(--ink-text-dim);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:18px;display:block;}
+  .lore-col p{color:var(--ink-text-dim);font-size:0.98rem;}
+  .lore-col .stat{
+    margin-top:26px;display:flex;gap:26px;font-family:var(--mono);font-size:0.82rem;
+  }
+  .lore-col .stat b{display:block;font-size:1.5rem;font-family:var(--display);letter-spacing:0.02em;}
+  .lore-col.scarer .stat b{color:var(--scream-bright);}
+  .lore-col.laugher .stat b{color:var(--laugh-bright);}
+  .lore-vs{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:64px;height:64px;border-radius:50%;
+    background:var(--ink);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--display);font-size:0.95rem;color:var(--hazard-bright);
+    z-index:5;box-shadow:0 0 0 8px var(--ink);
+  }
+
+  /* ---------- Overview / cell types ---------- */
+  .cell-legend{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;
+  }
+  .cell-card{
+    background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;display:flex;gap:16px;align-items:flex-start;
+    transition:transform .25s ease, border-color .25s ease;
+  }
+  .cell-card:hover{transform:translateY(-4px);border-color:rgba(237,234,226,0.28);}
+  .cell-swatch{width:38px;height:38px;border-radius:9px;flex:none;margin-top:2px;}
+  .cell-card h4{font-family:var(--body);font-weight:700;font-size:1rem;margin:0 0 6px;text-transform:none;color:var(--ink-text);}
+  .cell-card p{margin:0;color:var(--ink-text-dim);font-size:0.9rem;}
+
+  .board-stat-row{
+    display:flex;gap:0;margin-top:56px;border-top:1px solid var(--line);
+  }
+  .board-stat{flex:1;padding:26px 8px 0;border-right:1px solid var(--line);}
+  .board-stat:last-child{border-right:none;}
+  .board-stat b{display:block;font-family:var(--display);font-size:2.4rem;letter-spacing:0.02em;}
+  .board-stat span{font-family:var(--mono);font-size:0.74rem;color:var(--ink-text-dim);letter-spacing:0.06em;text-transform:uppercase;}
+
+  /* ---------- How to play ---------- */
+  .turn-seq{counter-reset:step;display:flex;flex-direction:column;}
+  .turn-step{
+    display:grid;grid-template-columns:80px 1fr;gap:24px;
+    padding:26px 0;border-bottom:1px solid var(--line-dark);
+  }
+  .turn-step:last-child{border-bottom:none;}
+  .turn-step .num{
+    font-family:var(--display);font-size:2.6rem;color:var(--sock);opacity:0.55;line-height:1;
+  }
+  .turn-step h4{font-family:var(--body);font-weight:700;font-size:1.15rem;margin:0 0 8px;text-transform:none;}
+  .turn-step p{margin:0;color:var(--dark-text-dim);}
+  .win-banner{
+    margin-top:44px;border-radius:var(--radius);
+    background:var(--ink);color:var(--ink-text);
+    padding:34px 36px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+    justify-content:space-between;
+  }
+  .win-banner .win-copy strong{display:block;font-family:var(--display);font-size:1.5rem;color:var(--hazard-bright);text-transform:uppercase;}
+  .win-banner .win-copy p{margin:6px 0 0;color:var(--ink-text-dim);max-width:44ch;}
+  .win-chip{font-family:var(--mono);font-size:0.85rem;background:var(--ink-3);border:1px solid var(--line);padding:10px 18px;border-radius:999px;white-space:nowrap;}
+
+  /* ---------- Monsters ---------- */
+  .type-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;}
+  .type-card{
+    position:relative;height:320px;border-radius:18px;perspective:1200px;cursor:pointer;
+  }
+  .type-inner{
+    position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.6,0,.3,1);
+    transform-style:preserve-3d;
+  }
+  .type-card.flipped .type-inner{transform:rotateY(180deg);}
+  .type-face{
+    position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;
+    padding:26px;border:1px solid var(--line);
+  }
+  .type-front{background:var(--ink-2);display:flex;flex-direction:column;}
+  .type-back{background:var(--ink-3);transform:rotateY(180deg);display:flex;flex-direction:column;justify-content:center;}
+  .creature{width:64px;height:64px;margin-bottom:18px;}
+  .type-front h4{font-size:1.3rem;margin-bottom:6px;color:var(--ink-text);}
+  .type-front .philosophy{color:var(--ink-text-dim);font-size:0.92rem;font-style:italic;flex:1;}
+  .flip-hint{font-family:var(--mono);font-size:0.68rem;color:var(--ink-text-dim);letter-spacing:0.08em;text-transform:uppercase;margin-top:auto;}
+  .type-back .trait-label{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--hazard-bright);margin-bottom:6px;}
+  .type-back p{margin:0 0 18px;font-size:0.9rem;color:var(--ink-text-dim);}
+  .type-back p:last-child{margin-bottom:0;}
+
+  .roster-wrap{margin-top:60px;overflow-x:auto;border-radius:var(--radius);border:1px solid var(--line);}
+  table.roster{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:0.85rem;min-width:640px;}
+  table.roster th{
+    text-align:left;padding:14px 18px;background:var(--ink-3);
+    font-weight:500;letter-spacing:0.06em;text-transform:uppercase;font-size:0.7rem;color:var(--ink-text-dim);
+  }
+  table.roster td{padding:14px 18px;border-top:1px solid var(--line);}
+  table.roster tr:hover td{background:rgba(237,234,226,0.03);}
+  .role-pill{font-size:0.7rem;padding:4px 10px;border-radius:999px;letter-spacing:0.04em;}
+  .role-pill.scarer{background:var(--scream-dim);color:var(--scream-bright);}
+  .role-pill.laugher{background:var(--laugh-dim);color:var(--laugh-bright);}
+
+  /* ---------- Cards ---------- */
+  .card-gallery{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;
+  }
+  .game-card{
+    background:linear-gradient(160deg, var(--ink-3), var(--ink-2));
+    border:1px solid var(--line);border-radius:16px;padding:24px;
+    min-height:210px;display:flex;flex-direction:column;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .game-card:hover{transform:translateY(-6px) rotate(-0.4deg);box-shadow:0 16px 32px rgba(0,0,0,0.35);}
+  .game-card .rarity{font-family:var(--mono);font-size:0.7rem;color:var(--hazard-bright);letter-spacing:0.08em;}
+  .game-card h4{font-size:1.1rem;margin:10px 0 8px;text-transform:none;font-family:var(--body);font-weight:700;}
+  .game-card p{color:var(--ink-text-dim);font-size:0.88rem;flex:1;margin:0;}
+  .game-card .count{
+    margin-top:14px;font-family:var(--mono);font-size:0.72rem;color:var(--ink-text-dim);
+    display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;
+  }
+
+  /* ---------- Download ---------- */
+  .download-panel{
+    background:linear-gradient(135deg, var(--scream-dim), var(--ink-2) 55%, var(--laugh-dim));
+    border-radius:24px;border:1px solid var(--line);
+    padding:64px 56px;display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;
+  }
+  .download-panel h2{font-size:clamp(2rem,4vw,2.8rem);}
+  .download-panel p{color:var(--ink-text-dim);margin-top:16px;max-width:46ch;}
+  .req-list{list-style:none;margin:26px 0 0;padding:0;font-family:var(--mono);font-size:0.85rem;}
+  .req-list li{padding:8px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--ink-text-dim);}
+  .req-list li b{color:var(--ink-text);font-weight:500;}
+  .download-actions{display:flex;flex-direction:column;gap:14px;}
+  .download-actions .btn{justify-content:center;width:100%;padding:18px 24px;}
+
+  /* ---------- Footer ---------- */
+  footer{padding:50px 0;border-top:1px solid var(--line);}
+  .foot-grid{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+  .foot-grid .brand{font-size:1.05rem;}
+  footer p{font-family:var(--mono);font-size:0.78rem;color:var(--ink-text-dim);margin:0;}
+  footer a{text-decoration:none;color:var(--ink-text-dim);}
+  footer a:hover{color:var(--ink-text);}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-copy{transform:translateY(30px) scale(0.95);}
+    .door-stage{margin-top:20px;max-width:260px;}
+    .lore-grid{grid-template-columns:1fr;}
+    .lore-vs{position:static;transform:none;margin:0 auto;box-shadow:none;}
+    .board-stat-row{flex-wrap:wrap;}
+    .board-stat{flex:1 1 45%;border-right:none;border-top:1px solid var(--line);padding-top:16px;}
+    .download-panel{grid-template-columns:1fr;padding:40px 28px;}
+    nav.links{display:none;}
+    .py{padding:76px 0;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hero-copy{opacity:1;transform:none;transition:none;}
+    .door-stage.open .door-panel.left,
+    .door-stage.open .door-panel.right,
+    .floor-strip .token{animation:none !important;}
+    .door-stage.open .door-panel.left{transform:rotateY(-108deg);}
+    .door-stage.open .door-panel.right{transform:rotateY(108deg);}
+    .reveal{opacity:1;transform:none;transition:none;}
+    .hero-copy{opacity:1 !important;transform:none !important;transition:none !important;}
+    .door-stage{opacity:0 !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="dot-pair"><span></span><span></span></span>
+      DOOR DASH
+    </a>
+    <nav class="links">
+      <a href="#lore" data-nav-link>The Rivalry</a>
+      <a href="#overview" data-nav-link>The Floor</a>
+      <a href="#howto" data-nav-link>How to Play</a>
+      <a href="#monsters" data-nav-link>Monsters</a>
+      <a href="#cards" data-nav-link>Cards</a>
+    </nav>
+    <a class="nav-cta" href="#download">Download</a>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div class="hero-copy" id="heroCopy">
+      <span class="eyebrow">Monstropolis Energy Division</span>
+      <h1>DooR<br>DasH</h1>
+      <div class="sub-title">SCARE&nbsp; VS&nbsp; LAUGH&nbsp; TOUCHDOWN</div>
+      <p class="lead">A 100-cell race across the Floor. Two monsters, one canister of victory. Collect energy through screams or laughter, dodge contamination socks, and be the first to reach Boo's Door with 1000 energy.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#download">Download the Game</a>
+        <a class="btn btn-ghost" href="#howto">How to Play</a>
+      </div>
+      <div style="margin-top:56px;max-width:520px;">
+        <div class="floor-strip" id="floorStrip"></div>
+        <div class="strip-caption"><span>CELL 00 — START</span><span>CELL 99 — BOO'S DOOR</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="door-stage" id="doorStage">
+        <div class="door-glow"></div>
+        <div class="door-frame">
+          <div class="door-panel left"><span class="knob"></span></div>
+          <div class="door-panel right"><span class="knob"></span></div>
+        </div>
+        <div class="door-number">DOOR №0099</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider on-dark"><div class="line"></div><div class="dot" style="background:var(--scream-bright)"></div><div class="dot" style="background:var(--laugh-bright)"></div><div class="line"></div></div>
+
+<section class="py on-dark" id="lore">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The Revolutionary Change</span>
+      <h2>Screams built the city.<br>Laughter is rewriting it.</h2>
+      <p>For generations, Monstropolis ran on the terrified shrieks of children. Then one discovery upended everything: laughter generates ten times the energy of a scream. Now Scarers and Laughers compete on the same Floor, and only one method will prove itself first.</p>
+    </div>
+    <div class="lore-grid reveal">
+      <div class="lore-col scarer">
+        <span class="tag">Tradition</span>
+        <h3>Scarers</h3>
+        <p>Legends of the old canister lines, built on precision fear and decades of technique. Every scream is a unit of currency — and Scarer doors reward those who still believe in the craft.</p>
+        <div class="stat"><div><b>25</b>Scarer doors</div><div><b>4</b>Scarer monsters</div></div>
+      </div>
+      <div class="lore-vs">VS</div>
+      <div class="lore-col laugher">
+        <span class="tag">Revolution</span>
+        <h3>Laughers</h3>
+        <p>The comedy speedsters proving that joy scales faster than fear ever did. Laugher doors pay out in kind to anyone bold enough to bet on the new energy economy.</p>
+        <div class="stat"><div><b>25</b>Laugher doors</div><div><b>4</b>Laugher monsters</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py on-paper" id="overview">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Game Overview</span>
+      <h2>One Floor. Six kinds of trouble.</h2>
+      <p>A 10×10 zigzag grid, the same wrap-around logic as a classic snakes-and-ladders board, but wired for an energy economy. Every cell type changes your position, your energy, or both.</p>
+    </div>
+    <div class="cell-legend reveal">
+      <div class="cell-card">
+        <div class="cell-swatch" style="background:linear-gradient(135deg,var(--scream),var(--laugh));"></div>
+        <div><h4>Doors — 50 cells</h4><p>Alternating Scarer and Laugher doors. Match your role and your whole team gains energy; mismatch and the whole team pays for it. One-time use, then exhausted forever.</p></div>
+      </div>
+      <div class="cell-card">
+        <div class="cell-swatch" style="background:#233A56;"></div>
+        <div><h4>Monster Cells — 6 cells</h4><p>Home to the 6 monsters not in play. Land with a matching role and fire your powerup for free; land opposed and risk an energy swap.</p></div>
+      </div>
+      <div class="cell-card">
+        <div class="cell-swatch" style="background:#2E4A2C;"></div>
+        <div><h4>Conveyor Belts — 5 cells</h4><p>Automated canister-line transport that rockets you forward across the Floor, snakes-and-ladders style.</p></div>
+      </div>
+      <div class="cell-card">
+        <div class="cell-swatch" style="background:#5C3A1E;"></div>
+        <div><h4>Contamination Socks — 5 cells</h4><p>CDA emergency protocol. Sends you backward and drains 100 energy — unless a shield is holding.</p></div>
+      </div>
+      <div class="cell-card">
+        <div class="cell-swatch" style="background:#5B2E33;"></div>
+        <div><h4>Card Cells — 10 cells</h4><p>Draw from a shuffled 25-card pile and resolve its effect on both monsters. Discarded after use, reshuffled when the pile runs dry.</p></div>
+      </div>
+      <div class="cell-card">
+        <div class="cell-swatch" style="background:var(--paper-2);border:1px solid var(--line-dark);"></div>
+        <div><h4>Normal Cells — 24 cells</h4><p>Quiet corridor space. Nothing happens here — which, on this Floor, is its own kind of relief.</p></div>
+      </div>
+    </div>
+    <div class="board-stat-row reveal">
+      <div class="board-stat"><b>100</b><span>Total Cells</span></div>
+      <div class="board-stat"><b>25</b><span>Cards in the Pile</span></div>
+      <div class="board-stat"><b>8</b><span>Playable Monsters</span></div>
+      <div class="board-stat"><b>1000</b><span>Energy to Win</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider on-dark"><div class="line"></div><div class="dot" style="background:var(--hazard-bright)"></div><div class="line"></div></div>
+
+<section class="py on-dark" id="howto">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">How to Play</span>
+      <h2>One turn, six moving parts.</h2>
+      <p>Every turn on the Floor runs the same sequence, in this order, every time.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:56px;align-items:start;">
+      <div class="turn-seq reveal">
+        <div class="turn-step">
+          <span class="num">01</span>
+          <div><h4 style="color:var(--ink-text)">Powerup phase (optional)</h4><p style="color:var(--ink-text-dim)">Spend 500 energy to activate your monster's powerup before you move, if you can afford it.</p></div>
+        </div>
+        <div class="turn-step">
+          <span class="num">02</span>
+          <div><h4 style="color:var(--ink-text)">Roll the dice</h4><p style="color:var(--ink-text-dim)">A standard six-sided roll sets how many cells you advance this turn.</p></div>
+        </div>
+        <div class="turn-step">
+          <span class="num">03</span>
+          <div><h4 style="color:var(--ink-text)">Attempt the move</h4><p style="color:var(--ink-text-dim)">If your landing cell is occupied by the opponent, the move is invalid and you roll again.</p></div>
+        </div>
+        <div class="turn-step">
+          <span class="num">04</span>
+          <div><h4 style="color:var(--ink-text)">Resolve the cell</h4><p style="color:var(--ink-text-dim)">Doors, cards, transports, and monster cells all fire their effect the moment you land.</p></div>
+        </div>
+        <div class="turn-step">
+          <span class="num">05</span>
+          <div><h4 style="color:var(--ink-text)">Update the board</h4><p style="color:var(--ink-text-dim)">Positions and energy totals are finalized for both monsters.</p></div>
+        </div>
+        <div class="turn-step">
+          <span class="num">06</span>
+          <div><h4 style="color:var(--ink-text)">Pass the turn</h4><p style="color:var(--ink-text-dim)">Unless the win condition is already met, the Floor hands control to the other monster.</p></div>
+        </div>
+      </div>
+      <div class="reveal" style="background:var(--ink-2);border:1px solid var(--line);border-radius:18px;padding:32px;">
+        <span class="eyebrow">Win Condition</span>
+        <p style="margin-top:16px;color:var(--ink-text-dim);">You win the moment <b style="color:var(--ink-text)">both</b> are true at once — reaching short of either one just means the Floor keeps going.</p>
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:12px;">
+          <div style="background:var(--ink-3);border-radius:10px;padding:16px;font-family:var(--mono);font-size:0.85rem;">Position = Cell 99 <span style="color:var(--ink-text-dim)">(Boo's Door)</span></div>
+          <div style="background:var(--ink-3);border-radius:10px;padding:16px;font-family:var(--mono);font-size:0.85rem;">Energy ≥ 1000</div>
+        </div>
+      </div>
+    </div>
+    <div class="win-banner reveal">
+      <div class="win-copy"><strong>No shortcuts to Boo's Door</strong><p>Arrive early without the energy and you're just another monster waiting for a better roll.</p></div>
+      <div class="win-chip">wrap-around board · retry on collision</div>
+    </div>
+  </div>
+</section>
+
+<section class="py on-paper" id="monsters">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Meet the Monsters</span>
+      <h2>Four philosophies. Eight canisters.</h2>
+      <p>Every monster belongs to one of four types, each with its own passive trait and a powerup that costs 500 energy — or fires free when you land on a matching Monster Cell. Tap a card to see the mechanics.</p>
+    </div>
+    <div class="type-grid reveal">
+
+      <div class="type-card" data-flip>
+        <div class="type-inner">
+          <div class="type-face type-front">
+            <svg class="creature" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="var(--scream-bright)" opacity="0.9"/><circle cx="24" cy="28" r="5" fill="var(--ink)"/><circle cx="42" cy="28" r="5" fill="var(--ink)"/><path d="M20 42 Q32 50 44 42" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            <h4>Dasher</h4>
+            <p class="philosophy">"Get to the door, get the laugh or scare, get out."</p>
+            <span class="flip-hint">Tap for mechanics →</span>
+          </div>
+          <div class="type-face type-back">
+            <span class="trait-label">Passive — Lightning Movement</span>
+            <p>Base dice movement is doubled.</p>
+            <span class="trait-label">Powerup — Momentum Rush</span>
+            <p>3x movement speed for the next 3 turns, replacing the passive doubling while active.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="type-card" data-flip>
+        <div class="type-inner">
+          <div class="type-face type-front">
+            <svg class="creature" viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="14" fill="var(--laugh-bright)" opacity="0.9"/><circle cx="24" cy="28" r="4" fill="var(--ink)"/><circle cx="40" cy="28" r="4" fill="var(--ink)"/><path d="M22 40 Q32 46 42 40" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            <h4>Dynamo</h4>
+            <p class="philosophy">"Maximum collection, maximum power."</p>
+            <span class="flip-hint">Tap for mechanics →</span>
+          </div>
+          <div class="type-face type-back">
+            <span class="trait-label">Passive — Energy Amplification</span>
+            <p>All energy gains and losses are doubled. A double-edged sword by design.</p>
+            <span class="trait-label">Powerup — Energy Freeze</span>
+            <p>Freezes the opponent, forcing them to skip their entire next turn.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="type-card" data-flip>
+        <div class="type-inner">
+          <div class="type-face type-front">
+            <svg class="creature" viewBox="0 0 64 64"><polygon points="32,8 56,24 48,54 16,54 8,24" fill="var(--hazard-bright)" opacity="0.9"/><circle cx="26" cy="30" r="4" fill="var(--ink)"/><circle cx="38" cy="30" r="4" fill="var(--ink)"/><path d="M24 42 Q32 47 40 42" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            <h4>Multitasker</h4>
+            <p class="philosophy">"Slow and steady. Handle everything perfectly."</p>
+            <span class="flip-hint">Tap for mechanics →</span>
+          </div>
+          <div class="type-face type-back">
+            <span class="trait-label">Passive — Movement / Energy Trade-off</span>
+            <p>Dice movement is halved, but every energy gain or loss gets a flat +200 bonus.</p>
+            <span class="trait-label">Powerup — Focus Mode</span>
+            <p>Move at normal speed for 2 turns while keeping the +200 energy bonus.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="type-card" data-flip>
+        <div class="type-inner">
+          <div class="type-face type-front">
+            <svg class="creature" viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="26" ry="22" fill="var(--scream)" opacity="0.9"/><circle cx="24" cy="28" r="4" fill="var(--ink)"/><circle cx="40" cy="28" r="4" fill="var(--ink)"/><path d="M20 42 Q32 36 44 42" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+            <h4>Schemer</h4>
+            <p class="philosophy">"Every setback is an opportunity."</p>
+            <span class="flip-hint">Tap for mechanics →</span>
+          </div>
+          <div class="type-face type-back">
+            <span class="trait-label">Passive — Energy Manipulation</span>
+            <p>Every energy change gets a +10 bonus — gains grow, losses shrink.</p>
+            <span class="trait-label">Powerup — Chain Attack</span>
+            <p>Steals 10 energy from every other monster on the Floor at once, ignoring shields.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="roster-wrap reveal">
+      <table class="roster">
+        <thead><tr><th>Monster</th><th>Type</th><th>Team</th><th>Starting Energy</th></tr></thead>
+        <tbody>
+          <tr><td>James P. Sullivan</td><td>Dynamo</td><td><span class="role-pill scarer">SCARER</span></td><td>300</td></tr>
+          <tr><td>Mike Wazowski</td><td>Dasher</td><td><span class="role-pill laugher">LAUGHER</span></td><td>100</td></tr>
+          <tr><td>Randall Boggs</td><td>Schemer</td><td><span class="role-pill scarer">SCARER</span></td><td>20</td></tr>
+          <tr><td>Celia Mae</td><td>Multitasker</td><td><span class="role-pill laugher">LAUGHER</span></td><td>50</td></tr>
+          <tr><td>Roz</td><td>Multitasker</td><td><span class="role-pill scarer">SCARER</span></td><td>100</td></tr>
+          <tr><td>Fungus</td><td>Dasher</td><td><span class="role-pill laugher">LAUGHER</span></td><td>50</td></tr>
+          <tr><td>Henry J. Waternoose</td><td>Schemer</td><td><span class="role-pill scarer">SCARER</span></td><td>70</td></tr>
+          <tr><td>Yeti</td><td>Dynamo</td><td><span class="role-pill laugher">LAUGHER</span></td><td>100</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider on-dark"><div class="line"></div><div class="dot" style="background:var(--scream-bright)"></div><div class="line"></div></div>
+
+<section class="py on-dark" id="cards">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The Card Pile</span>
+      <h2>25 cards. No two turns alike.</h2>
+      <p>Drawn from Card Cells and resolved on both monsters at once, then discarded — until the pile reshuffles and starts over.</p>
+    </div>
+    <div class="card-gallery reveal">
+      <div class="game-card">
+        <span class="rarity">SWAPPER</span>
+        <h4>Position Swap</h4>
+        <p>Swap places with your opponent — only if you're currently behind them.</p>
+        <div class="count"><span>In pile</span><span>4</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">START OVER</span>
+        <h4>Contamination Code</h4>
+        <p>Send yourself back to cell 0. Rarely welcome, occasionally strategic.</p>
+        <div class="count"><span>In pile</span><span>2</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">START OVER</span>
+        <h4>2319 Alert</h4>
+        <p>Send your opponent back to cell 0 — a full reset of their run.</p>
+        <div class="count"><span>In pile</span><span>3</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">ENERGY STEAL</span>
+        <h4>Small Snatcher</h4>
+        <p>Steal 50 energy from the opponent, unless their shield is up.</p>
+        <div class="count"><span>In pile</span><span>3</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">ENERGY STEAL</span>
+        <h4>Sneaky Thief</h4>
+        <p>Steal 100 energy from the opponent, unless their shield is up.</p>
+        <div class="count"><span>In pile</span><span>2</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">ENERGY STEAL</span>
+        <h4>Mega Drain</h4>
+        <p>Steal 150 energy from the opponent — the pile's rarest, biggest hit.</p>
+        <div class="count"><span>In pile</span><span>1</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">SHIELD</span>
+        <h4>Super Shield</h4>
+        <p>Blocks the next negative energy effect to your team. Only one shield exists at a time — claiming it strips it from your opponent first.</p>
+        <div class="count"><span>In pile</span><span>5</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">CONFUSION</span>
+        <h4>Mind Scramble</h4>
+        <p>Swaps both monsters' roles for 2 turns, scrambling door interactions.</p>
+        <div class="count"><span>In pile</span><span>3</span></div>
+      </div>
+      <div class="game-card">
+        <span class="rarity">CONFUSION</span>
+        <h4>Total Confusion</h4>
+        <p>Swaps both monsters' roles for 3 turns — the longest scramble in the pile.</p>
+        <div class="count"><span>In pile</span><span>2</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py on-dark" id="download">
+  <div class="wrap">
+    <div class="download-panel reveal">
+      <div>
+        <span class="eyebrow">Get on the Floor</span>
+        <h2>Download DooR DasH</h2>
+        <p>A JavaFX desktop build. Clone it, run it, and pick a side before your opponent does.</p>
+        <ul class="req-list">
+          <li><span>How to run</span><b>Unzip, then launch the game inside</b></li>
+          <li><span>Runtime</span><b>Java 17+ with JavaFX</b></li>
+          <li><span>Platform</span><b>Windows</b></li>
+        </ul>
+      </div>
+      <div class="download-actions">
+        <a class="btn btn-primary" href="https://github.com/Omar-Shaker-Elbana/doordashdownload/raw/main/downloads/DooR_DasH.zip" download rel="noopener">Download the Game (.zip)</a>
+        <a class="btn btn-ghost" href="https://github.com/Omar-Shaker-Elbana/DooR_DasH" target="_blank" rel="noopener">View Source on GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <a class="brand" href="#top">
+      <span class="dot-pair"><span></span><span></span></span>
+      DOOR DASH
+    </a>
+    <p>Built by Omar Shaker Elbana — Programming II, GIU · <a href="https://github.com/Omar-Shaker-Elbana/DooR_DasH" target="_blank" rel="noopener">github.com/Omar-Shaker-Elbana/DooR_DasH</a></p>
+  </div>
+</footer>
+
+<script>
+  // Build the floor strip (signature element)
+  (function(){
+    const strip = document.getElementById('floorStrip');
+    const pattern = ['c-norm','c-scare','c-mon','c-laugh','c-card','c-scare','c-conv','c-laugh','c-scare','c-sock','c-laugh','c-norm','c-scare','c-mon','c-laugh','c-card','c-scare','c-laugh','c-norm','c-scare'];
+    pattern.forEach(cls=>{
+      const d = document.createElement('div');
+      d.className = 'cell ' + cls;
+      strip.appendChild(d);
+    });
+    const token = document.createElement('div');
+    token.className = 'token';
+    strip.appendChild(token);
+  })();
+
+  // Door swing on load, hero copy pops out once the door is open
+  window.addEventListener('load', ()=>{
+    setTimeout(()=>{
+      document.getElementById('doorStage').classList.add('open');
+    }, 500);
+    setTimeout(()=>{
+      document.getElementById('heroCopy').classList.add('pop');
+    }, 1100);
+  });
+  
+  // Hero sequence: hero copy starts "inside" the door, the door swings open,
+  // the copy flies out to its resting position and scales up, then the door fades away.
+  (function(){
+    const doorStage = document.getElementById('doorStage');
+    const heroCopy = document.getElementById('heroCopy');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion || !doorStage || !heroCopy) return;
+
+    function stageCopyAtDoor(){
+      const d = doorStage.getBoundingClientRect();
+      const c = heroCopy.getBoundingClientRect();
+      const dx = (d.left + d.width / 2) - (c.left + c.width / 2);
+      const dy = (d.top + d.height / 2) - (c.top + c.height / 2);
+      heroCopy.style.transition = 'none';
+      heroCopy.style.opacity = '0';
+      heroCopy.style.transform = `translate(${dx}px, ${dy}px) scale(0.3)`;
+      heroCopy.offsetHeight; // force reflow so the instant hide isn't animated
+      heroCopy.style.transition = '';
+    }
+
+    // Stage it immediately (before the load-timed sequence) to avoid a flash of the final layout
+    stageCopyAtDoor();
+
+    window.addEventListener('load', ()=>{
+      // 1) Door begins swinging open
+      setTimeout(()=>{
+        doorStage.classList.add('open');
+      }, 500);
+
+      // 2) Hero copy flies out from the door partway through the swing
+      setTimeout(()=>{
+        heroCopy.style.transform = 'translate(0, 0) scale(1)';
+        heroCopy.style.opacity = '1';
+      }, 1200);
+
+      // 3) Once the copy has landed, the door fades away
+      setTimeout(()=>{
+        doorStage.classList.add('exit');
+      }, 2300);
+    });
+  })();
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.15});
+  revealEls.forEach(el=>io.observe(el));
+
+  // Scroll progress bar
+  const scrollProgress = document.getElementById('scrollProgress');
+  function updateScrollProgress(){
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateScrollProgress, {passive:true});
+  updateScrollProgress();
+
+  // Active nav link tracks whichever section is currently in view
+  const navLinks = document.querySelectorAll('[data-nav-link]');
+  const spySections = document.querySelectorAll('section[id]');
+  const spyObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const link = document.querySelector(`[data-nav-link][href="#${entry.target.id}"]`);
+      if(!link) return;
+      if(entry.isIntersecting){
+        navLinks.forEach(l=>l.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-45% 0px -50% 0px', threshold:0});
+  spySections.forEach(sec=>spyObserver.observe(sec));
+
+  // Monster type flip cards
+  document.querySelectorAll('[data-flip]').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      card.classList.toggle('flipped');
+    });
+  });
+</script>
+
+</body>
+</html>
